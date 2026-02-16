@@ -1,0 +1,54 @@
+{
+  "name": "waveloader",
+  "version": "0.1.0",
+  "description": "Skia-based animated wave ActivityIndicator replacement for React Native.",
+  "keywords": [
+    "react-native",
+    "activity-indicator",
+    "loader",
+    "wave",
+    "skia"
+  ],
+  "license": "MIT",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --sourcemap --clean --external react --external react-native --external @shopify/react-native-skia",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@shopify/react-native-skia": "^2.0.0",
+    "react": ">=18",
+    "react-native": ">=0.73"
+  },
+  "devDependencies": {
+    "@shopify/react-native-skia": "2.2.12",
+    "@types/react": "^19.1.10",
+    "react": "^19.1.0",
+    "react-native": "^0.81.5",
+    "tsup": "^8.3.6",
+    "typescript": "^5.9.2"
+  }
+}
