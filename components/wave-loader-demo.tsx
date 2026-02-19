@@ -12,11 +12,11 @@ import {
 } from "react-native";
 import {
   auroraPreset,
+  bouncePreset,
   frostPreset,
   lavaPreset,
-  mossPreset,
+  miniPreset,
   nebulaPreset,
-  neonPulsePreset,
   stormPreset,
   sunsetPreset,
   toxicPreset,
@@ -56,7 +56,7 @@ const MAHALO_PRESET: WaveLoaderProps = {
 
 const PRESETS: PresetItem[] = [
   {
-    id: "mahalo",
+    id: "mahaloPreset",
     label: "Mahalo",
     description: "The original",
     note: "Used on darkspacestudio.com",
@@ -65,67 +65,68 @@ const PRESETS: PresetItem[] = [
     bg: "light",
   },
   {
-    id: "aurora",
-    label: "Aurora",
-    description: "Multi-color northern lights",
-    value: auroraPreset,
+    id: "miniPreset",
+    label: "Mini",
+    description: "Tiny inline loader, no fade",
+    value: miniPreset,
     bg: "dark",
   },
   {
-    id: "sunset",
-    label: "Sunset",
-    description: "Warm corals, classic path",
-    value: sunsetPreset,
-    bg: "light",
-  },
-  {
-    id: "nebula",
+    id: "nebulaPreset",
     label: "Nebula",
     description: "Deep purple, mixed paths",
     value: nebulaPreset,
     bg: "dark",
   },
   {
-    id: "frost",
-    label: "Frost",
-    description: "Single icy wave, smooth",
-    value: frostPreset,
-    bg: "dark",
-  },
-  {
-    id: "storm",
-    label: "Storm",
-    description: "Fast dark, 5 waves",
-    value: stormPreset,
+    id: "bouncePreset",
+    label: "Bounce",
+    description: "Dual pulse, fast bounce",
+    value: bouncePreset,
     bg: "light",
   },
   {
-    id: "moss",
-    label: "Moss",
-    description: "Earthy green, 2 waves",
-    value: mossPreset,
-    bg: "light",
-  },
-  {
-    id: "neon-pulse",
-    label: "Neon Pulse",
-    description: "Bright neon multi-wave blend",
-    value: neonPulsePreset,
-    bg: "dark",
-  },
-  {
-    id: "lava",
+    id: "lavaPreset",
     label: "Lava",
     description: "Molten orange heat",
     value: lavaPreset,
     bg: "light",
   },
   {
-    id: "toxic",
+    id: "toxicPreset",
     label: "Toxic",
     description: "Acid green contrast, 2 waves",
     value: toxicPreset,
     bg: "dark",
+  },
+  {
+    id: "auroraPreset",
+    label: "Aurora",
+    description: "Multi-color northern lights",
+    value: auroraPreset,
+    bg: "dark",
+  },
+  {
+    id: "sunsetPreset",
+    label: "Sunset",
+    description: "Warm corals, choppy path",
+    value: sunsetPreset,
+    bg: "light",
+  },
+
+  {
+    id: "frostPreset",
+    label: "Frost",
+    description: "Single icy wave, smooth",
+    value: frostPreset,
+    bg: "dark",
+  },
+  {
+    id: "stormPreset",
+    label: "Storm",
+    description: "Fast dark, 5 waves",
+    value: stormPreset,
+    bg: "light",
   },
 ];
 
@@ -171,9 +172,10 @@ const COLOR_SWATCHES = [
 
 const PATH_VARIANTS: WavePathVariant[] = [
   "rounded",
-  "classic",
+  "choppy",
   "smooth",
   "tall",
+  "pulse",
 ];
 
 const API_ROWS: ApiRow[] = [
@@ -209,9 +211,15 @@ const API_ROWS: ApiRow[] = [
   },
   {
     name: "pathVariant?",
-    type: '"rounded" | "classic" | "smooth" | "tall"',
+    type: '"rounded" | "choppy" | "smooth" | "tall" | "pulse"',
     defaultValue: "rounded",
     description: "Global wave path style",
+  },
+  {
+    name: "fadeOut?",
+    type: "number",
+    defaultValue: "60",
+    description: "Edge fade intensity in % (0 = none, 100 = max)",
   },
   {
     name: "waveOverrides?",
@@ -236,7 +244,7 @@ const OVERRIDE_ROWS: ApiRow[] = [
   },
   {
     name: "pathVariant?",
-    type: '"rounded" | "classic" | "smooth" | "tall"',
+    type: '"rounded" | "choppy" | "smooth" | "tall"',
     defaultValue: "inherits global pathVariant",
     description: "Wave-specific path style",
   },
@@ -278,6 +286,8 @@ function buildUsageSnippet(props: WaveLoaderProps): string {
     attrs.push(`${INDENT_L3}durationMs={${props.durationMs}}`);
   if (props.pathVariant !== undefined)
     attrs.push(`${INDENT_L3}pathVariant="${props.pathVariant}"`);
+  if (props.fadeOut !== undefined && props.fadeOut !== 60)
+    attrs.push(`${INDENT_L3}fadeOut={${props.fadeOut}}`);
 
   if (props.waveOverrides && props.waveOverrides.length > 0) {
     const overrideLines = props.waveOverrides.map((override) => {
@@ -336,6 +346,9 @@ export default function WaveLoaderDemo() {
   const [previewBg, setPreviewBg] = useState<PreviewBg>("light");
   const [customBg, setCustomBg] = useState("#1A1A2E");
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [overridePickerIndex, setOverridePickerIndex] = useState<number | null>(
+    null,
+  );
 
   const waves = loaderProps.waves ?? 3;
   const durationMs = loaderProps.durationMs ?? 4000;
@@ -608,6 +621,44 @@ export default function WaveLoaderDemo() {
               </View>
             </View>
 
+            {/* Fade out */}
+            <Field label="fadeOut">
+              <View style={styles.stepperRow}>
+                <TextInput
+                  style={styles.stepperInput}
+                  value={String(loaderProps.fadeOut ?? 60)}
+                  onChangeText={(t) =>
+                    setNumberField(t, (n) => ({
+                      fadeOut:
+                        n !== undefined
+                          ? Math.min(100, Math.max(0, n))
+                          : undefined,
+                    }))
+                  }
+                  keyboardType="numeric"
+                  placeholderTextColor={MID}
+                />
+                <Pressable
+                  style={styles.stepperBtn}
+                  onPress={() => {
+                    const current = loaderProps.fadeOut ?? 60;
+                    setPartial({ fadeOut: Math.max(0, current - 10) });
+                  }}
+                >
+                  <Text style={styles.stepperBtnText}>-</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.stepperBtn}
+                  onPress={() => {
+                    const current = loaderProps.fadeOut ?? 60;
+                    setPartial({ fadeOut: Math.min(100, current + 10) });
+                  }}
+                >
+                  <Text style={styles.stepperBtnText}>+</Text>
+                </Pressable>
+              </View>
+            </Field>
+
             <View style={styles.fieldGroup}>
               <View style={styles.overridesRow}>
                 <Text style={styles.fieldLabel}>waveOverrides</Text>
@@ -628,19 +679,61 @@ export default function WaveLoaderDemo() {
                   .map((override, index) => (
                     <View key={`wave-${index}`} style={styles.overrideGroup}>
                       <Text style={styles.overrideLabel}>wave {index + 1}</Text>
-                      <TextInput
-                        style={styles.inputSm}
-                        value={override.color ?? ""}
-                        onChangeText={(t) =>
-                          updateWaveOverride(index, {
-                            color: t.trim() ? t : undefined,
-                          })
-                        }
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        placeholder="color #RRGGBB"
-                        placeholderTextColor={MID}
-                      />
+                      <View style={styles.overrideColorRow}>
+                        <TextInput
+                          style={[styles.inputSm, { flex: 1 }]}
+                          value={override.color ?? ""}
+                          onChangeText={(t) =>
+                            updateWaveOverride(index, {
+                              color: t.trim() ? t : undefined,
+                            })
+                          }
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          placeholder="color #RRGGBB"
+                          placeholderTextColor={MID}
+                        />
+                        <Pressable
+                          style={styles.overrideSwatchBtn}
+                          onPress={() =>
+                            setOverridePickerIndex(
+                              overridePickerIndex === index ? null : index,
+                            )
+                          }
+                        >
+                          <View
+                            style={[
+                              styles.overrideSwatch,
+                              {
+                                backgroundColor:
+                                  override.color ||
+                                  loaderProps.color ||
+                                  "#012D53",
+                              },
+                            ]}
+                          />
+                        </Pressable>
+                      </View>
+                      {overridePickerIndex === index && (
+                        <View style={styles.pickerDropdown}>
+                          <View style={styles.pickerSwatches}>
+                            {COLOR_SWATCHES.map((c) => (
+                              <Pressable
+                                key={c}
+                                style={[
+                                  styles.pickerSwatch,
+                                  { backgroundColor: c },
+                                  override.color === c && styles.pickerSwatchOn,
+                                ]}
+                                onPress={() => {
+                                  updateWaveOverride(index, { color: c });
+                                  setOverridePickerIndex(null);
+                                }}
+                              />
+                            ))}
+                          </View>
+                        </View>
+                      )}
                       <TextInput
                         style={styles.inputSm}
                         value={
@@ -829,7 +922,7 @@ export default function WaveLoaderDemo() {
 
             {/* Config */}
             <View style={styles.configHeader}>
-              <Text style={styles.metaLabel}>Config</Text>
+              <Text style={styles.metaLabel}>Current Config</Text>
               <Pressable onPress={copyCurrentConfig}>
                 <Text style={styles.copyText}>
                   {copied ? "copied" : "copy"}
@@ -846,7 +939,7 @@ export default function WaveLoaderDemo() {
 
         {/* Docs */}
         <View style={styles.docs}>
-          <Text style={styles.docsTitle}>Documentation</Text>
+          <Text style={styles.docsTitle}>Docs</Text>
 
           <DocBlock title="Installation">
             <CodeBlock code="npm install wave-loader @shopify/react-native-skia" />
@@ -875,7 +968,7 @@ export function MyLoader() {
   pathVariant="tall"
   waveOverrides={[
     { color: "#0A3D62", durationMs: 4600 },
-    { color: "#00B4D8", pathVariant: "classic" },
+    { color: "#00B4D8", pathVariant: "choppy" },
     { color: "#06D6A0", pathVariant: "smooth" },
     { color: "#48CAE4" },
   ]}
@@ -913,20 +1006,20 @@ export function MyLoader() {
             </View>
           </DocBlock>
 
-          <DocBlock title="Exported presets">
+          <DocBlock title="Presets">
+            <View style={styles.codeBox}>
+              <Text style={styles.codeText}>
+                {`import { WaveLoader, auroraPreset } from "wave-loader";\n\n<WaveLoader {...auroraPreset} />`}
+              </Text>
+            </View>
             <Text style={styles.bodyText}>
-              auroraPreset, sunsetPreset, frostPreset, stormPreset, mossPreset,
-              nebulaPreset, neonPulsePreset, lavaPreset, toxicPreset,
+              Ready-made configurations you can spread into WaveLoader:
             </Text>
-            {PRESETS.map((preset) => (
-              <View key={`docs-${preset.id}`} style={styles.presetDocRow}>
-                <Text style={styles.presetDocName}>{preset.label}</Text>
-                <Text style={styles.presetDocDesc}>
-                  {" "}
-                  — {preset.description}
-                </Text>
-              </View>
-            ))}
+            <Text style={[styles.bodyText]}>
+              {PRESETS.filter((p) => p.id !== "mahalo")
+                .map((p) => p.id)
+                .join(", ")}
+            </Text>
           </DocBlock>
         </View>
       </View>
@@ -1329,6 +1422,21 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginBottom: 8,
   },
+  overrideColorRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 0,
+  },
+  overrideSwatchBtn: {
+    justifyContent: "center",
+    paddingBottom: 4,
+    marginLeft: 10,
+  },
+  overrideSwatch: {
+    width: 18,
+    height: 18,
+    borderRadius: 1,
+  },
 
   // Preview
   preview: {
@@ -1398,7 +1506,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minWidth: 360,
     minHeight: 200,
-    paddingVertical: 40,
+    paddingVertical: 16,
     paddingHorizontal: 16,
   },
   metaLabel: {
@@ -1471,14 +1579,13 @@ const styles = StyleSheet.create({
   },
   docsTitle: {
     color: DARK,
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: "600",
     letterSpacing: 1.5,
     textTransform: "uppercase",
     marginBottom: 28,
   },
   docBlock: {
-    borderTopWidth: 1,
     borderTopColor: DARK,
     paddingTop: 20,
     marginBottom: 28,
@@ -1498,11 +1605,11 @@ const styles = StyleSheet.create({
 
   // Tables
   table: {
-    borderTopWidth: 1,
-    borderTopColor: DARK,
+    borderTopWidth: 0,
   },
   tableHead: {
     backgroundColor: "transparent",
+    borderBottomColor: DARK,
   },
   tableHeadCell: {
     color: DARK,

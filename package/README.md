@@ -28,7 +28,7 @@ export function Example() {
       pathVariant="tall"
       waveOverrides={[
         { color: "#0A3D62" },
-        { pathVariant: "classic", durationMs: 3600 },
+        { pathVariant: "choppy", durationMs: 3600 },
         { color: "#00A8CC", pathVariant: "smooth" },
       ]}
     />
@@ -36,7 +36,7 @@ export function Example() {
 }
 ```
 
-`pathVariant` supports `"rounded" | "classic" | "smooth" | "tall"`.
+`pathVariant` supports `"rounded" | "choppy" | "smooth" | "tall"`.
 
 Exported presets:
 `auroraPreset`, `sunsetPreset`, `frostPreset`,

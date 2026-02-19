@@ -10,9 +10,9 @@ export {
   sunsetPreset,
   frostPreset,
   stormPreset,
-  mossPreset,
+  miniPreset,
+  bouncePreset,
   nebulaPreset,
-  neonPulsePreset,
   lavaPreset,
   toxicPreset,
 } from "./presets";

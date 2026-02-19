@@ -34,7 +34,12 @@ const PHASE_OFFSET_ANCHORS = [
   Math.PI * 1.4,
 ] as const;
 
-export type WavePathVariant = "rounded" | "classic" | "smooth" | "tall";
+export type WavePathVariant =
+  | "rounded"
+  | "choppy"
+  | "smooth"
+  | "tall"
+  | "pulse";
 
 export interface WaveLoaderWaveOverride {
   color?: string;
@@ -49,6 +54,7 @@ export interface WaveLoaderProps {
   color?: string;
   durationMs?: number;
   pathVariant?: WavePathVariant;
+  fadeOut?: number;
   waveOverrides?: readonly WaveLoaderWaveOverride[];
 }
 
@@ -85,6 +91,28 @@ function buildWavePathByVariant(
 
   const segmentWidth = width / (POINTS - 1);
 
+  if (pathVariant === "pulse") {
+    // Single smooth bump — optimized for small sizes (e.g. 32x24 button loaders).
+    // 3 points: left edge, center peak, right edge. One cubic arc.
+    const amplitudeMultiplier = 1.8;
+    const leftY = baseY + Math.sin(tRad + phaseOffsetRad) * waveHeight * 0.3;
+    const peakY =
+      baseY +
+      Math.sin(tRad + phaseOffsetRad + Math.PI * 0.5) *
+        waveHeight *
+        amplitudeMultiplier;
+    const rightY =
+      baseY + Math.sin(tRad + phaseOffsetRad + Math.PI) * waveHeight * 0.3;
+
+    path.moveTo(0, height);
+    path.lineTo(0, leftY);
+    path.cubicTo(width * 0.33, leftY, width * 0.25, peakY, width * 0.5, peakY);
+    path.cubicTo(width * 0.75, peakY, width * 0.67, rightY, width, rightY);
+    path.lineTo(width, height);
+    path.close();
+    return;
+  }
+
   if (pathVariant === "smooth" || pathVariant === "tall") {
     const pointCount = pathVariant === "tall" ? 7 : POINTS;
     const smoothSegmentWidth = width / (pointCount - 1);
@@ -96,7 +124,8 @@ function buildWavePathByVariant(
     for (let i = 0; i < pointCount; i++) {
       const x = i * smoothSegmentWidth;
       const phase = (i / phaseDivisor) * Math.PI * 2 + phaseOffsetRad;
-      const y = baseY + Math.sin(tRad + phase) * waveHeight * amplitudeMultiplier;
+      const y =
+        baseY + Math.sin(tRad + phase) * waveHeight * amplitudeMultiplier;
       xs[i] = x;
       ys[i] = y;
     }
@@ -142,7 +171,7 @@ function buildWavePathByVariant(
       baseY +
       Math.sin(tRad + (i / POINTS) * Math.PI * 2 + phaseOffsetRad) * waveHeight;
 
-    if (pathVariant === "classic") {
+    if (pathVariant === "choppy") {
       const cpX = (prevX + x) / 2;
       path.quadTo(cpX, prevY, cpX, (prevY + y) / 2);
       path.quadTo(cpX, y, x, y);
@@ -165,6 +194,8 @@ function buildWavePathByVariant(
   path.close();
 }
 
+const DEFAULT_FADE_OUT = 60;
+
 export const WaveLoader = ({
   width = 240,
   height = 80,
@@ -172,10 +203,16 @@ export const WaveLoader = ({
   color = DEFAULT_COLOR,
   durationMs = DEFAULT_DURATION_MS,
   pathVariant = "rounded",
+  fadeOut = DEFAULT_FADE_OUT,
   waveOverrides,
 }: WaveLoaderProps) => {
   const clock = useClock();
   const waveCount = clampWaveCount(waves);
+  const clampedFadeOut = Math.min(100, Math.max(0, fadeOut));
+  const fadePositions = useMemo<[number, number, number, number]>(
+    () => [0, clampedFadeOut / 200, 1 - clampedFadeOut / 200, 1],
+    [clampedFadeOut],
+  );
   const resolvedWaveOverrides = waveOverrides ?? EMPTY_WAVE_OVERRIDES;
 
   const waveLayouts = useMemo(() => buildWaveLayouts(waveCount), [waveCount]);
@@ -236,11 +273,18 @@ export const WaveLoader = ({
           const waveConfig = waveConfigs[index];
 
           return (
-            <Path key={`wave-${index}`} path={wavePaths[index]} opacity={layout.opacity}>
+            <Path
+              key={`wave-${index}`}
+              path={wavePaths[index]}
+              opacity={layout.opacity}
+            >
               <LinearGradient
                 start={vec(0, 0)}
                 end={vec(0, height)}
-                colors={[waveConfig.color, toGradientEndColor(waveConfig.color)]}
+                colors={[
+                  waveConfig.color,
+                  toGradientEndColor(waveConfig.color),
+                ]}
                 positions={[0, layout.gradientStop]}
               />
             </Path>
@@ -253,7 +297,7 @@ export const WaveLoader = ({
               start={vec(0, height / 2)}
               end={vec(width, height / 2)}
               colors={["transparent", "black", "black", "transparent"]}
-              positions={[0, 0.3, 0.7, 1]}
+              positions={fadePositions}
             />
           </Rect>
         </Group>
@@ -275,14 +319,17 @@ function useAnimatedWavePath(
     "worklet";
     const resolvedDuration =
       waveConfig.durationMs > 0 ? waveConfig.durationMs : DEFAULT_DURATION_MS;
-    const t = ((clock.value % resolvedDuration) / resolvedDuration) * Math.PI * 2;
+    const t =
+      ((clock.value % resolvedDuration) / resolvedDuration) * Math.PI * 2;
     const roundCycleMs = Math.max(
       MIN_ROUNDNESS_CYCLE_MS,
       resolvedDuration * ROUNDNESS_CYCLE_RATIO,
     );
-    const roundPhase = ((clock.value % roundCycleMs) / roundCycleMs) * Math.PI * 2;
+    const roundPhase =
+      ((clock.value % roundCycleMs) / roundCycleMs) * Math.PI * 2;
     const roundness =
-      ROUNDNESS_MIN + (ROUNDNESS_MAX - ROUNDNESS_MIN) * (0.5 + 0.5 * Math.sin(roundPhase));
+      ROUNDNESS_MIN +
+      (ROUNDNESS_MAX - ROUNDNESS_MIN) * (0.5 + 0.5 * Math.sin(roundPhase));
 
     buildWavePathByVariant(
       waveConfig.pathVariant,
@@ -342,7 +389,10 @@ function getWaveLayout(layouts: WaveLayout[], index: number): WaveLayout {
   return layouts[Math.min(index, layouts.length - 1)];
 }
 
-function getWaveConfig(configs: WaveResolvedConfig[], index: number): WaveResolvedConfig {
+function getWaveConfig(
+  configs: WaveResolvedConfig[],
+  index: number,
+): WaveResolvedConfig {
   return configs[Math.min(index, configs.length - 1)];
 }
 
@@ -354,7 +404,10 @@ function clampWaveCount(waves: number): number {
   return Math.min(MAX_WAVES, Math.max(MIN_WAVES, Math.round(waves)));
 }
 
-function resolveColor(color: string | undefined, fallback = DEFAULT_COLOR): string {
+function resolveColor(
+  color: string | undefined,
+  fallback = DEFAULT_COLOR,
+): string {
   if (typeof color !== "string") {
     return fallback;
   }
@@ -363,7 +416,10 @@ function resolveColor(color: string | undefined, fallback = DEFAULT_COLOR): stri
   return trimmed.length > 0 ? trimmed : fallback;
 }
 
-function resolveDuration(durationMs: number | undefined, fallback = DEFAULT_DURATION_MS): number {
+function resolveDuration(
+  durationMs: number | undefined,
+  fallback = DEFAULT_DURATION_MS,
+): number {
   if (typeof durationMs !== "number") {
     return fallback;
   }
@@ -381,9 +437,10 @@ function resolvePathVariant(
 ): WavePathVariant {
   if (
     pathVariant === "rounded" ||
-    pathVariant === "classic" ||
+    pathVariant === "choppy" ||
     pathVariant === "smooth" ||
-    pathVariant === "tall"
+    pathVariant === "tall" ||
+    pathVariant === "pulse"
   ) {
     return pathVariant;
   }
@@ -475,9 +532,5 @@ function toGradientEndColor(color: string): string {
     l: Math.min(100, hsl.l + 20),
   };
   const shifted = HSLToHex(shiftedHsl);
-  const result = `${shifted}00`;
-  console.log(
-    `[toGradientEndColor] input: ${color} → HSL(${hsl.h}, ${hsl.s}%, ${hsl.l}%) → shifted HSL(${shiftedHsl.h}, ${shiftedHsl.s}%, ${shiftedHsl.l}%) → ${shifted} → ${result}`,
-  );
-  return result;
+  return `${shifted}00`;
 }

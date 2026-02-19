@@ -21,7 +21,7 @@ export const sunsetPreset: WaveLoaderPreset = {
   waves: 3,
   color: "#C2694F",
   durationMs: 3500,
-  pathVariant: "classic",
+  pathVariant: "choppy",
   waveOverrides: [
     { color: "#E8A87C" },
     { color: "#C2694F" },
@@ -44,16 +44,26 @@ export const stormPreset: WaveLoaderPreset = {
   waves: 5,
   color: "#2B3A4A",
   durationMs: 2000,
-  pathVariant: "classic",
+  pathVariant: "choppy",
 };
 
-export const mossPreset: WaveLoaderPreset = {
-  width: 180,
-  height: 90,
+export const miniPreset: WaveLoaderPreset = {
+  width: 32,
+  height: 24,
+  waves: 1,
+  color: "#06D6A0",
+  durationMs: 1400,
+  pathVariant: "pulse",
+  fadeOut: 50,
+};
+
+export const bouncePreset: WaveLoaderPreset = {
+  width: 240,
+  height: 100,
   waves: 2,
-  color: "#1B4332",
-  durationMs: 4800,
-  pathVariant: "rounded",
+  color: "#000000",
+  durationMs: 1400,
+  pathVariant: "pulse",
 };
 
 export const nebulaPreset: WaveLoaderPreset = {
@@ -66,24 +76,9 @@ export const nebulaPreset: WaveLoaderPreset = {
   waveOverrides: [
     { color: "#6A0DAD", pathVariant: "rounded", durationMs: 5000 },
     { color: "#9B59B6", pathVariant: "smooth", durationMs: 6000 },
-    { color: "#3D0066", pathVariant: "classic", durationMs: 5200 },
+    { color: "#3D0066", pathVariant: "choppy", durationMs: 5200 },
     { color: "#BB8FCE", pathVariant: "rounded", durationMs: 4800 },
     { color: "#7D3C98", pathVariant: "smooth", durationMs: 5700 },
-  ],
-};
-
-export const neonPulsePreset: WaveLoaderPreset = {
-  width: 260,
-  height: 90,
-  waves: 4,
-  color: "#0B1020",
-  durationMs: 2800,
-  pathVariant: "smooth",
-  waveOverrides: [
-    { color: "#00F5FF" },
-    { color: "#7B2CFF" },
-    { color: "#FF2D95" },
-    { color: "#00FFA3" },
   ],
 };
 
@@ -107,6 +102,6 @@ export const toxicPreset: WaveLoaderPreset = {
   waves: 2,
   color: "#1B2B00",
   durationMs: 2300,
-  pathVariant: "classic",
+  pathVariant: "choppy",
   waveOverrides: [{ color: "#9EFF00" }, { color: "#D2FF6B" }],
 };
