@@ -12,7 +12,7 @@ export {
   stormPreset,
   miniPreset,
   bouncePreset,
-  rotationPreset,
+  mikrohistoriePreset,
   nebulaPreset,
   lavaPreset,
   toxicPreset,

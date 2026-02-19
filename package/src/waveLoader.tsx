@@ -38,8 +38,10 @@ export type WavePathVariant =
   | "rounded"
   | "choppy"
   | "smooth"
-  | "tall"
-  | "pulse";
+  | "pulse"
+  | "square"
+  | "ripple"
+  | "travel";
 
 export interface WaveLoaderWaveOverride {
   color?: string;
@@ -74,6 +76,100 @@ interface WaveResolvedConfig {
 }
 
 const EMPTY_WAVE_OVERRIDES: readonly WaveLoaderWaveOverride[] = [];
+const TAU = Math.PI * 2;
+
+function drawSmoothPath(
+  path: ReturnType<typeof Skia.Path.Make>,
+  xs: number[],
+  ys: number[],
+) {
+  "worklet";
+  const pointCount = xs.length;
+
+  const get = (i: number) => {
+    const bounded = Math.max(0, Math.min(pointCount - 1, i));
+    return { x: xs[bounded], y: ys[bounded] };
+  };
+
+  for (let i = 0; i < pointCount - 1; i++) {
+    const p0 = get(i - 1);
+    const p1 = get(i);
+    const p2 = get(i + 1);
+    const p3 = get(i + 2);
+
+    const c1x = p1.x + ((p2.x - p0.x) / 6) * 2;
+    const c1y = p1.y + ((p2.y - p0.y) / 6) * 2;
+    const c2x = p2.x - ((p3.x - p1.x) / 6) * 2;
+    const c2y = p2.y - ((p3.y - p1.y) / 6) * 2;
+
+    path.cubicTo(c1x, c1y, c2x, c2y, p2.x, p2.y);
+  }
+}
+
+function getPointCount(pathVariant: WavePathVariant): number {
+  "worklet";
+  if (pathVariant === "travel" || pathVariant === "square") {
+    return 7;
+  }
+
+  return POINTS;
+}
+
+function getAmplitudeMultiplier(pathVariant: WavePathVariant): number {
+  "worklet";
+  if (pathVariant === "square") return 0.8;
+  if (pathVariant === "travel") return 1.05;
+  return 1;
+}
+
+function squareWave(rad: number): number {
+  "worklet";
+  return Math.sin(rad) >= 0 ? 1 : -1;
+}
+
+function sampleWave(
+  pathVariant: WavePathVariant,
+  tRad: number,
+  tContinuousRad: number,
+  phaseOffsetRad: number,
+  phaseProgress: number,
+  xRatio: number,
+): number {
+  "worklet";
+  const phase = tRad + phaseProgress * TAU + phaseOffsetRad;
+
+  if (pathVariant === "square") {
+    return squareWave(phase);
+  }
+
+  if (pathVariant === "ripple") {
+    const envelope = 0.35 + 0.65 * (1 - Math.abs(xRatio - 0.5) * 2);
+    return Math.sin(phase) * envelope;
+  }
+
+  if (pathVariant === "travel") {
+    return Math.sin(xRatio * TAU * 1.75 + tContinuousRad * 1.4 + phaseOffsetRad);
+  }
+
+  return Math.sin(phase);
+}
+
+function getPhaseProgress(
+  pathVariant: WavePathVariant,
+  index: number,
+  pointCount: number,
+): number {
+  "worklet";
+  if (
+    pathVariant === "rounded" ||
+    pathVariant === "choppy" ||
+    pathVariant === "smooth"
+  ) {
+    return index / pointCount;
+  }
+
+  return index / (pointCount - 1);
+}
 
 function buildWavePathByVariant(
   pathVariant: WavePathVariant,
@@ -83,14 +179,13 @@ function buildWavePathByVariant(
   baseY: number,
   waveHeight: number,
   tRad: number,
+  tContinuousRad: number,
   phaseOffsetRad: number,
   roundness: number,
 ) {
   "worklet";
 
   path.reset();
-
-  const segmentWidth = width / (POINTS - 1);
 
   if (pathVariant === "pulse") {
     // Single smooth bump — optimized for small sizes (e.g. 32x24 button loaders).
@@ -113,64 +208,67 @@ function buildWavePathByVariant(
     path.close();
     return;
   }
+  const pointCount = getPointCount(pathVariant);
+  const segmentWidth = width / (pointCount - 1);
+  const amplitudeMultiplier = getAmplitudeMultiplier(pathVariant);
+  const xs = new Array<number>(pointCount);
+  const ys = new Array<number>(pointCount);
 
-  if (pathVariant === "smooth" || pathVariant === "tall") {
-    const pointCount = pathVariant === "tall" ? 7 : POINTS;
-    const smoothSegmentWidth = width / (pointCount - 1);
-    const amplitudeMultiplier = pathVariant === "tall" ? 1.35 : 1;
-    const phaseDivisor = pathVariant === "tall" ? pointCount - 1 : pointCount;
-    const xs = new Array<number>(pointCount);
-    const ys = new Array<number>(pointCount);
+  for (let i = 0; i < pointCount; i++) {
+    const x = i * segmentWidth;
+    const xRatio = i / (pointCount - 1);
+    const phaseProgress = getPhaseProgress(pathVariant, i, pointCount);
+    const sample = sampleWave(
+      pathVariant,
+      tRad,
+      tContinuousRad,
+      phaseOffsetRad,
+      phaseProgress,
+      xRatio,
+    );
+    xs[i] = x;
+    ys[i] = baseY + sample * waveHeight * amplitudeMultiplier;
+  }
 
-    for (let i = 0; i < pointCount; i++) {
-      const x = i * smoothSegmentWidth;
-      const phase = (i / phaseDivisor) * Math.PI * 2 + phaseOffsetRad;
-      const y =
-        baseY + Math.sin(tRad + phase) * waveHeight * amplitudeMultiplier;
-      xs[i] = x;
-      ys[i] = y;
-    }
+  path.moveTo(0, height);
+  path.lineTo(xs[0], ys[0]);
 
-    path.moveTo(0, height);
-    path.lineTo(xs[0], ys[0]);
-
-    const get = (i: number) => {
-      const bounded = Math.max(0, Math.min(pointCount - 1, i));
-      return { x: xs[bounded], y: ys[bounded] };
-    };
-
-    for (let i = 0; i < pointCount - 1; i++) {
-      const p0 = get(i - 1);
-      const p1 = get(i);
-      const p2 = get(i + 1);
-      const p3 = get(i + 2);
-
-      const c1x = p1.x + ((p2.x - p0.x) / 6) * 2;
-      const c1y = p1.y + ((p2.y - p0.y) / 6) * 2;
-      const c2x = p2.x - ((p3.x - p1.x) / 6) * 2;
-      const c2y = p2.y - ((p3.y - p1.y) / 6) * 2;
-
-      path.cubicTo(c1x, c1y, c2x, c2y, p2.x, p2.y);
-    }
-
+  if (pathVariant === "smooth") {
+    drawSmoothPath(path, xs, ys);
     path.lineTo(width, height);
     path.close();
     return;
   }
 
-  path.moveTo(0, height);
+  if (pathVariant === "ripple" || pathVariant === "travel") {
+    drawSmoothPath(path, xs, ys);
+    path.lineTo(width, height);
+    path.close();
+    return;
+  }
 
-  const y0 = baseY + Math.sin(tRad + phaseOffsetRad) * waveHeight;
-  path.lineTo(0, y0);
+  if (pathVariant === "square") {
+    for (let i = 1; i < pointCount; i++) {
+      const prevX = xs[i - 1];
+      const prevY = ys[i - 1];
+      const x = xs[i];
+      const y = ys[i];
+      const midX = (prevX + x) / 2;
+      path.lineTo(midX, prevY);
+      path.lineTo(midX, y);
+      path.lineTo(x, y);
+    }
+    path.lineTo(width, height);
+    path.close();
+    return;
+  }
 
-  let prevX = 0;
-  let prevY = y0;
+  let prevX = xs[0];
+  let prevY = ys[0];
 
-  for (let i = 1; i < POINTS; i++) {
-    const x = i * segmentWidth;
-    const y =
-      baseY +
-      Math.sin(tRad + (i / POINTS) * Math.PI * 2 + phaseOffsetRad) * waveHeight;
+  for (let i = 1; i < pointCount; i++) {
+    const x = xs[i];
+    const y = ys[i];
 
     if (pathVariant === "choppy") {
       const cpX = (prevX + x) / 2;
@@ -325,8 +423,9 @@ function useAnimatedWavePath(
     "worklet";
     const resolvedDuration =
       waveConfig.durationMs > 0 ? waveConfig.durationMs : DEFAULT_DURATION_MS;
-    const t =
+    const tWrapped =
       ((clock.value % resolvedDuration) / resolvedDuration) * Math.PI * 2;
+    const tContinuous = (clock.value / resolvedDuration) * Math.PI * 2;
     const roundCycleMs = Math.max(
       MIN_ROUNDNESS_CYCLE_MS,
       resolvedDuration * ROUNDNESS_CYCLE_RATIO,
@@ -344,7 +443,8 @@ function useAnimatedWavePath(
       height,
       height * layout.baseYRatio,
       height * layout.amplitudeRatio,
-      t,
+      tWrapped,
+      tContinuous,
       layout.phaseOffsetRad,
       roundness,
     );
@@ -449,8 +549,10 @@ function resolvePathVariant(
     pathVariant === "rounded" ||
     pathVariant === "choppy" ||
     pathVariant === "smooth" ||
-    pathVariant === "tall" ||
-    pathVariant === "pulse"
+    pathVariant === "pulse" ||
+    pathVariant === "square" ||
+    pathVariant === "ripple" ||
+    pathVariant === "travel"
   ) {
     return pathVariant;
   }
@@ -458,7 +560,10 @@ function resolvePathVariant(
   return fallback;
 }
 
-function resolveOpacity(opacity: number | undefined, fallback = DEFAULT_OPACITY) {
+function resolveOpacity(
+  opacity: number | undefined,
+  fallback = DEFAULT_OPACITY,
+) {
   if (typeof opacity !== "number" || !Number.isFinite(opacity)) {
     return fallback;
   }

@@ -25,7 +25,7 @@ export function Example() {
       waves={4}
       color="#1F6FEB"
       durationMs={4200}
-      pathVariant="tall"
+      pathVariant="smooth"
       waveOverrides={[
         { color: "#0A3D62" },
         { pathVariant: "choppy", durationMs: 3600 },
@@ -36,10 +36,10 @@ export function Example() {
 }
 ```
 
-`pathVariant` supports `"rounded" | "choppy" | "smooth" | "tall"`.
+`pathVariant` supports `"rounded" | "choppy" | "smooth" | "pulse" | "square" | "ripple" | "travel"`.
 `opacity` scales all wave opacities proportionally (`0..1`), with default `0.5` preserving the current look.
 
 Exported presets:
 `auroraPreset`, `sunsetPreset`, `frostPreset`,
-`stormPreset`, `miniPreset`, `bouncePreset`, `rotationPreset`, `nebulaPreset`, `lavaPreset`,
+`stormPreset`, `miniPreset`, `bouncePreset`, `mikrohistoriePreset`, `nebulaPreset`, `lavaPreset`,
 `toxicPreset`.

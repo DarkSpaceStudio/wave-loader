@@ -15,9 +15,9 @@ import {
   bouncePreset,
   frostPreset,
   lavaPreset,
+  mikrohistoriePreset,
   miniPreset,
   nebulaPreset,
-  rotationPreset,
   stormPreset,
   sunsetPreset,
   toxicPreset,
@@ -59,11 +59,20 @@ const PRESETS: PresetItem[] = [
   {
     id: "mahaloPreset",
     label: "Mahalo",
-    description: "The original",
-    note: "Used on darkspacestudio.com",
-    noteUrl: "https://darkspacestudio.com",
+    description: "The OG that started it all.",
+    note: "Used in Mahalo app",
+    noteUrl: "https://mahalo.finance/",
     value: MAHALO_PRESET,
     bg: "light",
+  },
+  {
+    id: "mikrohistoriePreset",
+    label: "Mikrohistorie",
+    description: "Pulse path, 5 waves, high opacity.",
+    note: "Used in Mikrohistorie app",
+    noteUrl: "https://mikrohistorie.com",
+    value: mikrohistoriePreset,
+    bg: "dark",
   },
   {
     id: "miniPreset",
@@ -86,13 +95,7 @@ const PRESETS: PresetItem[] = [
     value: bouncePreset,
     bg: "light",
   },
-  {
-    id: "rotationPreset",
-    label: "Rotation",
-    description: "Pulse path, 5 waves, high opacity",
-    value: rotationPreset,
-    bg: "dark",
-  },
+
   {
     id: "lavaPreset",
     label: "Lava",
@@ -117,7 +120,7 @@ const PRESETS: PresetItem[] = [
   {
     id: "sunsetPreset",
     label: "Sunset",
-    description: "Warm corals, choppy path",
+    description: "Warm corals, smooth path",
     value: sunsetPreset,
     bg: "light",
   },
@@ -179,11 +182,13 @@ const COLOR_SWATCHES = [
 ];
 
 const PATH_VARIANTS: WavePathVariant[] = [
-  "rounded",
   "choppy",
+  "rounded",
+  "ripple",
   "smooth",
-  "tall",
+  "travel",
   "pulse",
+  "square",
 ];
 const DEFAULT_OPACITY = 0.5;
 
@@ -226,7 +231,7 @@ const API_ROWS: ApiRow[] = [
   },
   {
     name: "pathVariant?",
-    type: '"rounded" | "choppy" | "smooth" | "tall" | "pulse"',
+    type: '"rounded" | "choppy" | "smooth" | "pulse" | "square" | "ripple" | "travel"',
     defaultValue: "rounded",
     description: "Global wave path style",
   },
@@ -259,7 +264,7 @@ const OVERRIDE_ROWS: ApiRow[] = [
   },
   {
     name: "pathVariant?",
-    type: '"rounded" | "choppy" | "smooth" | "tall"',
+    type: '"rounded" | "choppy" | "smooth" | "pulse" | "square" | "ripple" | "travel"',
     defaultValue: "inherits global pathVariant",
     description: "Wave-specific path style",
   },
@@ -1022,7 +1027,7 @@ export function MyLoader() {
   waves={4}
   color="#1F6FEB"
   durationMs={4200}
-  pathVariant="tall"
+  pathVariant="smooth"
   waveOverrides={[
     { color: "#0A3D62", durationMs: 4600 },
     { color: "#00B4D8", pathVariant: "choppy" },

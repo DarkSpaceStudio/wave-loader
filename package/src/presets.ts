@@ -3,14 +3,14 @@ import type { WaveLoaderProps } from "./waveLoader";
 export type WaveLoaderPreset = WaveLoaderProps;
 
 export const auroraPreset: WaveLoaderPreset = {
-  width: 400,
+  width: 500,
   height: 200,
   waves: 4,
   pathVariant: "smooth",
   waveOverrides: [
     { color: "#890082", durationMs: 10200 },
     { color: "#890082", durationMs: 8600 },
-    { color: "#00D00B", durationMs: 5800 },
+    { color: "#00D00B", durationMs: 5800, pathVariant: "travel" },
     { color: "#5BC800", durationMs: 6200 },
   ],
 };
@@ -21,7 +21,7 @@ export const sunsetPreset: WaveLoaderPreset = {
   waves: 3,
   color: "#C2694F",
   durationMs: 3500,
-  pathVariant: "choppy",
+  pathVariant: "smooth",
   waveOverrides: [
     { color: "#E8A87C" },
     { color: "#C2694F" },
@@ -44,7 +44,7 @@ export const stormPreset: WaveLoaderPreset = {
   waves: 5,
   color: "#2B3A4A",
   durationMs: 2000,
-  pathVariant: "choppy",
+  pathVariant: "travel",
 };
 
 export const miniPreset: WaveLoaderPreset = {
@@ -66,7 +66,7 @@ export const bouncePreset: WaveLoaderPreset = {
   pathVariant: "pulse",
 };
 
-export const rotationPreset: WaveLoaderPreset = {
+export const mikrohistoriePreset: WaveLoaderPreset = {
   width: 200,
   height: 40,
   waves: 5,
@@ -86,11 +86,11 @@ export const nebulaPreset: WaveLoaderPreset = {
   opacity: 0.9,
   pathVariant: "smooth",
   waveOverrides: [
-    { color: "#6A0DAD", pathVariant: "rounded", durationMs: 5000 },
-    { color: "#8931b5", pathVariant: "smooth", durationMs: 6000 },
-    { color: "#3D0066", pathVariant: "choppy", durationMs: 5200 },
-    { color: "#ce5bff", pathVariant: "rounded", durationMs: 4800 },
-    { color: "#7D3C98", pathVariant: "smooth", durationMs: 5700 },
+    { color: "#6A0DAD", pathVariant: "rounded", durationMs: 6000 },
+    { color: "#8931b5", pathVariant: "smooth", durationMs: 7000 },
+    { color: "#3D0066", pathVariant: "travel", durationMs: 6200 },
+    { color: "#ce5bff", pathVariant: "rounded", durationMs: 5800 },
+    { color: "#7D3C98", pathVariant: "smooth", durationMs: 6700 },
   ],
 };
 
@@ -100,11 +100,11 @@ export const lavaPreset: WaveLoaderPreset = {
   waves: 3,
   color: "#2A0E05",
   durationMs: 3200,
-  pathVariant: "rounded",
+  pathVariant: "ripple",
   waveOverrides: [
     { color: "#FF0000" },
-    { color: "#FF2E00" },
-    { color: "#FF0000" },
+    { color: "#da6301" },
+    { color: "#cf0000" },
   ],
 };
 
