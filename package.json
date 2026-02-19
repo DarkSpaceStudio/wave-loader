@@ -1,54 +1,33 @@
 {
-  "name": "waveloader",
-  "version": "0.1.0",
-  "description": "Skia-based animated wave ActivityIndicator replacement for React Native.",
-  "keywords": [
-    "react-native",
-    "activity-indicator",
-    "loader",
-    "wave",
-    "skia"
-  ],
-  "license": "MIT",
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "react-native": "src/index.ts",
-  "source": "src/index.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "react-native": "./src/index.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "files": [
-    "dist",
-    "src",
-    "README.md"
-  ],
-  "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
+  "name": "wave-loader-docs",
+  "main": "expo-router/entry",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --sourcemap --clean --external react --external react-native --external @shopify/react-native-skia",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist",
-    "prepack": "npm run build"
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build:web": "expo export -p web",
+    "package:install": "npm --prefix ./package install",
+    "package:build": "npm --prefix ./package run build",
+    "package:test": "npm --prefix ./package test",
+    "postinstall": "mkdir -p public; cp $(node -p \"require.resolve('canvaskit-wasm/bin/full/canvaskit.wasm', { paths: [require.resolve('@shopify/react-native-skia')] })\") public/canvaskit.wasm",
+    "deploy": "npx expo export -p web && npx eas-cli@latest deploy"
   },
-  "peerDependencies": {
-    "@shopify/react-native-skia": "^2.0.0",
-    "react": ">=18",
-    "react-native": ">=0.73"
-  },
-  "devDependencies": {
+  "dependencies": {
     "@shopify/react-native-skia": "2.2.12",
-    "@types/react": "^19.1.10",
-    "react": "^19.1.0",
-    "react-native": "^0.81.5",
-    "tsup": "^8.3.6",
-    "typescript": "^5.9.2"
-  }
+    "expo": "^54.0.1",
+    "expo-linking": "^8.0.8",
+    "expo-router": "~6.0.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-reanimated": "4.2.1",
+    "react-native-safe-area-context": "^5.6.1",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "^0.21.0",
+    "react-native-worklets": "0.7.1",
+    "wave-loader": "file:./package"
+  },
+  "version": "1.0.0",
+  "private": true
 }

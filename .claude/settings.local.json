@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:necolas.github.io)",
+      "Bash(npm install:*)",
+      "Bash(npm view:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite build:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)",
+      "Bash(grep:*)",
+      "Bash(kill:*)"
+    ]
+  }
+}

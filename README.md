@@ -1,36 +1,21 @@
-# waveloader
+# wave-loader repository
 
-Skia-based animated wave loader for React Native.
+This repository now has two parts:
 
-## Install
+- `package/`: the publishable `wave-loader` npm package
+- root app (`app/`, `components/`): Expo docs/playground
 
-```bash
-npm install waveloader @shopify/react-native-skia
-```
-
-You also need `react` and `react-native` in your app.
-
-## Usage
-
-```tsx
-import { WaveLoader } from "waveloader";
-
-export function Example() {
-  return <WaveLoader width={240} height={80} />;
-}
-```
-
-## Development
+## Docs app (root)
 
 ```bash
 npm install
-npm run typecheck
-npm run build
+npm run start
 ```
 
-## Publish
+## Package (library)
 
 ```bash
-npm publish --access public
+npm run package:install
+npm run package:build
+npm run package:test
 ```
-
