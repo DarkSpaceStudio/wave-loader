@@ -54,6 +54,7 @@ export interface WaveLoaderProps {
   color?: string;
   durationMs?: number;
   pathVariant?: WavePathVariant;
+  opacity?: number;
   fadeOut?: number;
   waveOverrides?: readonly WaveLoaderWaveOverride[];
 }
@@ -195,6 +196,7 @@ function buildWavePathByVariant(
 }
 
 const DEFAULT_FADE_OUT = 60;
+const DEFAULT_OPACITY = OPACITY_ANCHORS[OPACITY_ANCHORS.length - 1];
 
 export const WaveLoader = ({
   width = 240,
@@ -203,11 +205,15 @@ export const WaveLoader = ({
   color = DEFAULT_COLOR,
   durationMs = DEFAULT_DURATION_MS,
   pathVariant = "rounded",
+  opacity = DEFAULT_OPACITY,
   fadeOut = DEFAULT_FADE_OUT,
   waveOverrides,
 }: WaveLoaderProps) => {
   const clock = useClock();
   const waveCount = clampWaveCount(waves);
+  const resolvedOpacity = resolveOpacity(opacity);
+  const opacityScale =
+    DEFAULT_OPACITY > 0 ? resolvedOpacity / DEFAULT_OPACITY : 1;
   const clampedFadeOut = Math.min(100, Math.max(0, fadeOut));
   const fadePositions = useMemo<[number, number, number, number]>(
     () => [0, clampedFadeOut / 200, 1 - clampedFadeOut / 200, 1],
@@ -276,7 +282,7 @@ export const WaveLoader = ({
             <Path
               key={`wave-${index}`}
               path={wavePaths[index]}
-              opacity={layout.opacity}
+              opacity={clampUnit(layout.opacity * opacityScale)}
             >
               <LinearGradient
                 start={vec(0, 0)}
@@ -347,12 +353,16 @@ function useAnimatedWavePath(
 
 function buildWaveLayouts(waveCount: number): WaveLayout[] {
   const layouts: WaveLayout[] = [];
+  const singleWaveOpacity = DEFAULT_OPACITY;
 
   for (let index = 0; index < waveCount; index++) {
     layouts.push({
       baseYRatio: sampleAnchor(BASE_Y_ANCHORS, waveCount, index),
       amplitudeRatio: sampleAnchor(AMPLITUDE_ANCHORS, waveCount, index),
-      opacity: sampleAnchor(OPACITY_ANCHORS, waveCount, index),
+      opacity:
+        waveCount === 1
+          ? singleWaveOpacity
+          : sampleAnchor(OPACITY_ANCHORS, waveCount, index),
       gradientStop: sampleAnchor(GRADIENT_STOP_ANCHORS, waveCount, index),
       phaseOffsetRad: sampleAnchor(PHASE_OFFSET_ANCHORS, waveCount, index),
     });
@@ -446,6 +456,22 @@ function resolvePathVariant(
   }
 
   return fallback;
+}
+
+function resolveOpacity(opacity: number | undefined, fallback = DEFAULT_OPACITY) {
+  if (typeof opacity !== "number" || !Number.isFinite(opacity)) {
+    return fallback;
+  }
+
+  return clampUnit(opacity);
+}
+
+function clampUnit(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.min(1, Math.max(0, value));
 }
 
 function sampleAnchor(

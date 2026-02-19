@@ -37,10 +37,11 @@ export function Example() {
 ```
 
 `pathVariant` supports `"rounded" | "choppy" | "smooth" | "tall"`.
+`opacity` scales all wave opacities proportionally (`0..1`), with default `0.5` preserving the current look.
 
 Exported presets:
 `auroraPreset`, `sunsetPreset`, `frostPreset`,
-`stormPreset`, `mossPreset`, `nebulaPreset`, `neonPulsePreset`, `lavaPreset`,
+`stormPreset`, `miniPreset`, `bouncePreset`, `rotationPreset`, `nebulaPreset`, `lavaPreset`,
 `toxicPreset`.
 
 ## Development

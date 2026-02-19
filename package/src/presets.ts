@@ -3,7 +3,7 @@ import type { WaveLoaderProps } from "./waveLoader";
 export type WaveLoaderPreset = WaveLoaderProps;
 
 export const auroraPreset: WaveLoaderPreset = {
-  width: 320,
+  width: 400,
   height: 200,
   waves: 4,
   pathVariant: "smooth",
@@ -66,18 +66,30 @@ export const bouncePreset: WaveLoaderPreset = {
   pathVariant: "pulse",
 };
 
+export const rotationPreset: WaveLoaderPreset = {
+  width: 200,
+  height: 40,
+  waves: 5,
+  color: "#64C9EF",
+  durationMs: 2000,
+  opacity: 0.9,
+  pathVariant: "pulse",
+  fadeOut: 100,
+};
+
 export const nebulaPreset: WaveLoaderPreset = {
-  width: 300,
-  height: 100,
+  width: 500,
+  height: 160,
   waves: 5,
   color: "#3D0066",
   durationMs: 5500,
+  opacity: 0.9,
   pathVariant: "smooth",
   waveOverrides: [
     { color: "#6A0DAD", pathVariant: "rounded", durationMs: 5000 },
-    { color: "#9B59B6", pathVariant: "smooth", durationMs: 6000 },
+    { color: "#8931b5", pathVariant: "smooth", durationMs: 6000 },
     { color: "#3D0066", pathVariant: "choppy", durationMs: 5200 },
-    { color: "#BB8FCE", pathVariant: "rounded", durationMs: 4800 },
+    { color: "#ce5bff", pathVariant: "rounded", durationMs: 4800 },
     { color: "#7D3C98", pathVariant: "smooth", durationMs: 5700 },
   ],
 };

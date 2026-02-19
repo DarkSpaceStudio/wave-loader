@@ -12,6 +12,7 @@ export {
   stormPreset,
   miniPreset,
   bouncePreset,
+  rotationPreset,
   nebulaPreset,
   lavaPreset,
   toxicPreset,

@@ -17,6 +17,7 @@ import {
   lavaPreset,
   miniPreset,
   nebulaPreset,
+  rotationPreset,
   stormPreset,
   sunsetPreset,
   toxicPreset,
@@ -84,6 +85,13 @@ const PRESETS: PresetItem[] = [
     description: "Dual pulse, fast bounce",
     value: bouncePreset,
     bg: "light",
+  },
+  {
+    id: "rotationPreset",
+    label: "Rotation",
+    description: "Pulse path, 5 waves, high opacity",
+    value: rotationPreset,
+    bg: "dark",
   },
   {
     id: "lavaPreset",
@@ -177,6 +185,7 @@ const PATH_VARIANTS: WavePathVariant[] = [
   "tall",
   "pulse",
 ];
+const DEFAULT_OPACITY = 0.5;
 
 const API_ROWS: ApiRow[] = [
   {
@@ -208,6 +217,12 @@ const API_ROWS: ApiRow[] = [
     type: "number",
     defaultValue: "4000",
     description: "Global animation cycle duration in ms",
+  },
+  {
+    name: "opacity?",
+    type: "number",
+    defaultValue: "0.5",
+    description: "Global opacity modulator (0-1), proportional across waves",
   },
   {
     name: "pathVariant?",
@@ -284,6 +299,8 @@ function buildUsageSnippet(props: WaveLoaderProps): string {
     attrs.push(`${INDENT_L3}color="${props.color}"`);
   if (props.durationMs !== undefined)
     attrs.push(`${INDENT_L3}durationMs={${props.durationMs}}`);
+  if (props.opacity !== undefined && props.opacity !== DEFAULT_OPACITY)
+    attrs.push(`${INDENT_L3}opacity={${props.opacity}}`);
   if (props.pathVariant !== undefined)
     attrs.push(`${INDENT_L3}pathVariant="${props.pathVariant}"`);
   if (props.fadeOut !== undefined && props.fadeOut !== 60)
@@ -352,6 +369,7 @@ export default function WaveLoaderDemo() {
 
   const waves = loaderProps.waves ?? 3;
   const durationMs = loaderProps.durationMs ?? 4000;
+  const opacity = loaderProps.opacity ?? DEFAULT_OPACITY;
   const pathVariant = loaderProps.pathVariant ?? "rounded";
 
   const currentConfig = useMemo(
@@ -593,6 +611,45 @@ export default function WaveLoaderDemo() {
                 <Pressable
                   style={styles.stepperBtn}
                   onPress={() => adjustDuration(400)}
+                >
+                  <Text style={styles.stepperBtnText}>+</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Opacity with +/- */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.fieldLabel}>opacity</Text>
+              <View style={styles.stepperRow}>
+                <TextInput
+                  style={styles.stepperInput}
+                  value={String(opacity)}
+                  onChangeText={(t) =>
+                    setNumberField(t, (n) => ({
+                      opacity:
+                        n !== undefined
+                          ? Math.min(1, Math.max(0, n))
+                          : undefined,
+                    }))
+                  }
+                  keyboardType="numeric"
+                  placeholderTextColor={MID}
+                />
+                <Pressable
+                  style={styles.stepperBtn}
+                  onPress={() => {
+                    const next = Math.max(0, opacity - 0.1);
+                    setPartial({ opacity: Number(next.toFixed(2)) });
+                  }}
+                >
+                  <Text style={styles.stepperBtnText}>-</Text>
+                </Pressable>
+                <Pressable
+                  style={styles.stepperBtn}
+                  onPress={() => {
+                    const next = Math.min(1, opacity + 0.1);
+                    setPartial({ opacity: Number(next.toFixed(2)) });
+                  }}
                 >
                   <Text style={styles.stepperBtnText}>+</Text>
                 </Pressable>
