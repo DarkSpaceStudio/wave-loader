@@ -1,6 +1,6 @@
-# waveloader
+# WaveLoader
 
-Skia-based animated wave loader for React Native.
+Skia-based animated wave loader for React Native. Can be used instead of ActivityIndicator.
 
 Web docs/playground are in the repository root Expo app.
 
@@ -42,18 +42,3 @@ Exported presets:
 `auroraPreset`, `sunsetPreset`, `frostPreset`,
 `stormPreset`, `mossPreset`, `nebulaPreset`, `neonPulsePreset`, `lavaPreset`,
 `toxicPreset`.
-
-## Development
-
-```bash
-npm install
-npm run tsc
-npm run build
-npm test
-```
-
-## Publish
-
-```bash
-npm publish --access public
-```
