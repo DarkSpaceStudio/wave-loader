@@ -141,44 +141,61 @@ const PRESETS: PresetItem[] = [
   },
 ];
 
-const COLOR_SWATCHES = [
-  // Blues
+const COLOR_SWATCHES: string[] = [
+  "#1A1A2E",
+  "#2B3A4A",
+  "#334155",
+  "#5D748A",
+  "#94A3B8",
+  "#E2E8F0",
+  "#F0E6D3",
   "#012D53",
   "#0A3D62",
   "#1F6FEB",
+  "#0077B6",
   "#0096C7",
   "#00B4D8",
   "#48CAE4",
-  // Greens & teals
+  "#8EF7FF",
+  "#90E0EF",
+  "#00F5FF",
+  "#77E3FF",
+  "#65D7FF",
+  "#A8DADC",
+  "#5FFFD2",
+  "#66FFCC",
   "#06D6A0",
+  "#00C97A",
+  "#52B788",
+  "#B7E4C7",
+  "#7AE582",
+  "#7DFFA7",
+  "#00FFA3",
+  "#39FF9C",
+  "#39FF14",
+  "#9EFF00",
+  "#D2FF6B",
   "#1B4332",
   "#2D6A4F",
-  "#A8DADC",
-  // Purples
   "#2D1B69",
-  "#6A0DAD",
-  "#9B59B6",
   "#3D0066",
+  "#6A0DAD",
   "#7B2CFF",
+  "#9B59B6",
+  "#A78BFA",
+  "#AD8CFF",
+  "#C4B5FD",
+  "#C490FF",
   "#FF2D95",
-  // Warm
-  "#C2694F",
-  "#E8A87C",
   "#8B3A3A",
+  "#C2694F",
   "#D4A373",
+  "#E8A87C",
+  "#F4A261",
+  "#FF8A3D",
   "#FF6B00",
   "#FF2E00",
   "#FFC300",
-  // Neon & acid
-  "#00F5FF",
-  "#00FFA3",
-  "#9EFF00",
-  "#D2FF6B",
-  // Neutrals
-  "#2B3A4A",
-  "#5D748A",
-  "#1A1A2E",
-  "#F0E6D3",
 ];
 
 const PATH_VARIANTS: WavePathVariant[] = [
@@ -574,22 +591,13 @@ export default function WaveLoaderDemo() {
               </View>
               {colorPickerOpen && (
                 <View style={styles.pickerDropdown}>
-                  <View style={styles.pickerSwatches}>
-                    {COLOR_SWATCHES.map((c) => (
-                      <Pressable
-                        key={c}
-                        style={[
-                          styles.pickerSwatch,
-                          { backgroundColor: c },
-                          loaderProps.color === c && styles.pickerSwatchOn,
-                        ]}
-                        onPress={() => {
-                          setPartial({ color: c });
-                          setColorPickerOpen(false);
-                        }}
-                      />
-                    ))}
-                  </View>
+                  <ColorSwatchPalette
+                    selectedColor={loaderProps.color}
+                    onSelect={(c) => {
+                      setPartial({ color: c });
+                      setColorPickerOpen(false);
+                    }}
+                  />
                 </View>
               )}
             </Field>
@@ -778,22 +786,13 @@ export default function WaveLoaderDemo() {
                       </View>
                       {overridePickerIndex === index && (
                         <View style={styles.pickerDropdown}>
-                          <View style={styles.pickerSwatches}>
-                            {COLOR_SWATCHES.map((c) => (
-                              <Pressable
-                                key={c}
-                                style={[
-                                  styles.pickerSwatch,
-                                  { backgroundColor: c },
-                                  override.color === c && styles.pickerSwatchOn,
-                                ]}
-                                onPress={() => {
-                                  updateWaveOverride(index, { color: c });
-                                  setOverridePickerIndex(null);
-                                }}
-                              />
-                            ))}
-                          </View>
+                          <ColorSwatchPalette
+                            selectedColor={override.color}
+                            onSelect={(c) => {
+                              updateWaveOverride(index, { color: c });
+                              setOverridePickerIndex(null);
+                            }}
+                          />
                         </View>
                       )}
                       <TextInput
@@ -1099,6 +1098,30 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
     <View style={styles.fieldBlock}>
       <Text style={styles.fieldLabel}>{label}</Text>
       {children}
+    </View>
+  );
+}
+
+function ColorSwatchPalette({
+  selectedColor,
+  onSelect,
+}: {
+  selectedColor: string | undefined;
+  onSelect: (color: string) => void;
+}) {
+  return (
+    <View style={styles.pickerSwatches}>
+      {COLOR_SWATCHES.map((color) => (
+        <Pressable
+          key={color}
+          style={[
+            styles.pickerSwatch,
+            { backgroundColor: color },
+            selectedColor === color && styles.pickerSwatchOn,
+          ]}
+          onPress={() => onSelect(color)}
+        />
+      ))}
     </View>
   );
 }

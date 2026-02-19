@@ -1,8 +1,14 @@
 import React from "react";
-import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
-import { AsyncSkia } from "../components/async-skia";
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
+import { AsyncSkia } from "../components/asyncSkia";
 
-const WaveLoaderDemo = React.lazy(() => import("../components/wave-loader-demo"));
+const WaveLoaderDemo = React.lazy(() => import("../components/waveLoaderDemo"));
 
 class SkiaErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -17,8 +23,22 @@ class SkiaErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFED" }}>
-          <Text style={{ color: "#0C161F", fontSize: 16, fontWeight: "600", marginBottom: 8 }}>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#FFFFED",
+          }}
+        >
+          <Text
+            style={{
+              color: "#0C161F",
+              fontSize: 16,
+              fontWeight: "600",
+              marginBottom: 8,
+            }}
+          >
             Rendering context lost
           </Text>
           <Text style={{ color: "#6B7D8D", fontSize: 13, marginBottom: 20 }}>
@@ -33,7 +53,13 @@ class SkiaErrorBoundary extends React.Component<
               }
             }}
           >
-            <Text style={{ color: "#0C161F", fontSize: 13, textDecorationLine: "underline" }}>
+            <Text
+              style={{
+                color: "#0C161F",
+                fontSize: 13,
+                textDecorationLine: "underline",
+              }}
+            >
               Reload page
             </Text>
           </Pressable>
@@ -50,9 +76,17 @@ export default function Page() {
       <SkiaErrorBoundary>
         <React.Suspense
           fallback={
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-              <ActivityIndicator />
-              <Text style={{ color: "#CFE6FF", marginTop: 12 }}>Loading Skia...</Text>
+            <View
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ActivityIndicator color="#CFE6FF" />
+              <Text style={{ color: "#CFE6FF", marginTop: 12 }}>
+                Loading Skia...
+              </Text>
             </View>
           }
         >
