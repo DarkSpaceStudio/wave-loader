@@ -1,6 +1,6 @@
 {
   "name": "wave-loader",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Skia-based animated wave ActivityIndicator replacement for React Native.",
   "keywords": [
     "react-native",
@@ -40,7 +40,7 @@
     "prepack": "npm run build"
   },
   "peerDependencies": {
-    "@shopify/react-native-skia": "^2.0.0",
+    "@shopify/react-native-skia": "^2.4.21",
     "react": ">=18",
     "react-native": ">=0.73"
   },
