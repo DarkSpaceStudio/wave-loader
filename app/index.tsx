@@ -6,9 +6,26 @@ import {
   Text,
   View,
 } from "react-native";
-import { AsyncSkia } from "../components/asyncSkia";
+import { WithSkiaWeb } from "@shopify/react-native-skia/lib/module/web";
 
-const WaveLoaderDemo = React.lazy(() => import("../components/waveLoaderDemo"));
+const locateSkiaFile = (file: string) =>
+  typeof window === "undefined"
+    ? `/${file}`
+    : new URL(file, window.location.origin).toString();
+
+function SkiaLoadingFallback() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Text style={{ color: "#6B7D8D" }}>Loading Skia...</Text>
+    </View>
+  );
+}
 
 class SkiaErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -96,28 +113,21 @@ class SkiaErrorBoundary extends React.Component<
 }
 
 export default function Page() {
+  const isStaticWebRender =
+    Platform.OS === "web" && typeof window === "undefined";
+
   return (
     <View style={{ flex: 1, backgroundColor: "#FFFFED" }}>
       <SkiaErrorBoundary>
-        <React.Suspense
-          fallback={
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ActivityIndicator color="#CFE6FF" />
-              <Text style={{ color: "#CFE6FF", marginTop: 12 }}>
-                Loading Skia...
-              </Text>
-            </View>
-          }
-        >
-          <AsyncSkia />
-          <WaveLoaderDemo />
-        </React.Suspense>
+        {isStaticWebRender ? (
+          <SkiaLoadingFallback />
+        ) : (
+          <WithSkiaWeb
+            fallback={<SkiaLoadingFallback />}
+            opts={{ locateFile: locateSkiaFile }}
+            getComponent={() => import("../components/waveLoaderDemo")}
+          />
+        )}
       </SkiaErrorBoundary>
     </View>
   );

@@ -489,7 +489,9 @@ export default function WaveLoaderDemo() {
             </Pressable>
             <Pressable
               onPress={() =>
-                Linking.openURL("https://github.com/nicksrandall/wave-loader")
+                Linking.openURL(
+                  "https://github.com/DarkSpaceStudio/wave-loader",
+                )
               }
             >
               <Text style={styles.navLink}>GitHub</Text>
