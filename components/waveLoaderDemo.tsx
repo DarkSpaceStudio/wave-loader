@@ -1,5 +1,6 @@
 import { useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import {
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -26,6 +27,7 @@ import {
   type WaveLoaderWaveOverride,
   type WavePathVariant,
 } from "wave-loader";
+import darkSpaceVerticalIMG from "../assets/vertical-wordmark.svg";
 
 type PreviewBg = "light" | "dark" | "custom";
 
@@ -1089,7 +1091,11 @@ export function MyLoader() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Dark Space Studio</Text>
+        <Image
+          style={styles.footerImage}
+          alt="DarkSpace.Studio"
+          source={darkSpaceVerticalIMG}
+        />
       </View>
     </ScrollView>
   );
@@ -1757,9 +1763,8 @@ const styles = StyleSheet.create({
     paddingVertical: 28,
     alignItems: "center",
   },
-  footerText: {
-    color: MID,
-    fontSize: 12,
-    letterSpacing: 0.8,
+  footerImage: {
+    width: 170.67,
+    height: 46,
   },
 });
