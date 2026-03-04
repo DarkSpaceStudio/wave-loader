@@ -12,16 +12,23 @@ const WaveLoaderDemo = React.lazy(() => import("../components/waveLoaderDemo"));
 
 class SkiaErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean }
+  { error: Error | null }
 > {
-  state = { hasError: false };
+  state = { error: null };
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("Skia render failed", error);
   }
 
   render() {
-    if (this.state.hasError) {
+    if (this.state.error) {
+      const message = this.state.error.message || "";
+      const isContextLoss = /context lost|webgl context/i.test(message);
+
       return (
         <View
           style={{
@@ -39,17 +46,35 @@ class SkiaErrorBoundary extends React.Component<
               marginBottom: 8,
             }}
           >
-            Rendering context lost
+            {isContextLoss ? "Rendering context lost" : "Unable to load Skia"}
           </Text>
           <Text style={{ color: "#6B7D8D", fontSize: 13, marginBottom: 20 }}>
-            This can happen after your device sleeps.
+            {isContextLoss
+              ? "This can happen after your device sleeps."
+              : "The browser failed while initializing the web renderer."}
+          </Text>
+          {!isContextLoss && message ? (
+            <Text
+              style={{
+                color: "#6B7D8D",
+                fontSize: 12,
+                marginBottom: 20,
+                maxWidth: 360,
+                textAlign: "center",
+              }}
+            >
+              {message}
+            </Text>
+          ) : null}
+          <Text style={{ color: "#6B7D8D", fontSize: 13, marginBottom: 20 }}>
+            Reload page after the wasm asset finishes deploying.
           </Text>
           <Pressable
             onPress={() => {
               if (Platform.OS === "web") {
                 window.location.reload();
               } else {
-                this.setState({ hasError: false });
+                this.setState({ error: null });
               }
             }}
           >

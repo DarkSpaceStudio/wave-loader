@@ -39,7 +39,13 @@ const getSuspendingPromise = () => {
 
   const id = "skia";
   if (!promiseMap.has(id)) {
-    const loader = wrapPromise(LoadSkiaWeb());
+    const loader = wrapPromise(
+      LoadSkiaWeb({
+        // The static export places the wasm at the site root.
+        // CanvasKit otherwise resolves it relative to the JS bundle path.
+        locateFile: (file) => new URL(file, window.location.origin).toString(),
+      }),
+    );
     promiseMap.set(id, loader);
     return loader.read();
   }
