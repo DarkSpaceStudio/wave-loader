@@ -125,7 +125,7 @@ export default function Page() {
           <WithSkiaWeb
             fallback={<SkiaLoadingFallback />}
             opts={{ locateFile: locateSkiaFile }}
-            getComponent={() => import("../components/waveLoaderDemo")}
+            getComponent={() => import("../layouts/waveLoaderDemo")}
           />
         )}
       </SkiaErrorBoundary>
